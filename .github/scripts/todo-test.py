@@ -3,6 +3,7 @@ from io import StringIO
 from todo import Task, TaskPool
 
 class TestTaskPool(unittest.TestCase):
+
     def setUp(self):
         self.pool = TaskPool()
 
@@ -21,12 +22,17 @@ class TestTaskPool(unittest.TestCase):
         done_tasks = self.pool.get_done_tasks()
         self.assertIn("Add Login UI", [t.title for t in done_tasks])
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestTaskPool)
-stream = StringIO()
-runner = unittest.TextTestRunner(stream=stream, verbosity=2)
-runner.run(suite)
-output_lines = stream.getvalue().splitlines()
-for line in output_lines:
-    if "..." in line:
-        print(line.split(" ... ")[0].split(".")[-1] + " ... ok")
-        
+if __name__ == "__main__":
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestTaskPool)
+    captured_output = StringIO()
+    result = unittest.TextTestRunner(stream=captured_output, verbosity=2).run(suite)
+    output_lines = captured_output.getvalue().splitlines()
+    for line in output_lines:
+        if "ok" in line:
+            print(line.split(' ')[0] + ' ... ok')
+    total_tests = result.testsRun
+    failed_tests = [t[0] for t in result.failures + result.errors]
+    passed_tests = [test for test in suite if test not in failed_tests]
+    print(f"Total Tests: {total_tests}")
+    print(f"Passed: {len(passed_tests)} ({(len(passed_tests) / total_tests * 100):.2f}%)")
+    print(f"Failed: {len(failed_tests)} ({(len(failed_tests) / total_tests * 100):.2f}%)")
