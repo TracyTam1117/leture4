@@ -1,0 +1,25 @@
+cat > .github/workflows/tracker.yml << 'EOF'
+name: GitHub Projects Automation
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  move-issue-to-done:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Check for Merge and Move Issue to Done
+        if: github.event.pull_request.merged == true
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels \
+            -d '{"labels":["done"]}'
+EOF
